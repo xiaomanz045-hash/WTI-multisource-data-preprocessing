@@ -34,35 +34,3 @@ The manuscript provides the original provider names, source websites, and collec
 ## BERT sentiment model
 
 Article-level news sentiment was generated with [`hw2942/bert-base-chinese-finetuning-financial-news-sentiment`](https://huggingface.co/hw2942/bert-base-chinese-finetuning-financial-news-sentiment), pinned to revision `596188a9c884118e13984140a8b568a2252e01c2`. The model configuration defines class 0 as `Negative`, class 1 as `Neutral`, and class 2 as `Positive`; the manuscript pipeline maps these classes to -1, 0, and 1. Inputs are padded and truncated to a maximum length of 512 tokens. `preprocessing/bert_sentiment_analysis.py` performs inference, while `feature_preprocessing.py` averages article-level scores by day and forward-fills missing trading dates when constructing `NH`.
-
-## Frozen intermediate feature data
-
-### CEEMDAN decomposition
-
-`artifacts/frozen_ceemdan.xlsx` stores the historical decomposition actually used in the manuscript. Its worksheets map to variables as follows:
-
-| Worksheet | Variable |
-|---|---|
-| `Upper bound` | `UB` |
-| `Lower bound` | `LB` |
-| `BIPC1` | `BI1` |
-| `BIPC2` | `BI2` |
-| `Sentiment Score` | `NH` |
-| `SDPLS1` | `SD1` |
-| `SDPLS2` | `SD2` |
-
-Each sheet contains the original signal, its IMF components, and the associated sample-entropy information. The exact IMF allocation used for low-, medium-, and high-frequency reconstruction is declared in `preprocessing/ceemdan_reconstruction.py`.
-
-### Time-ordered 2V-GCN nodes
-
-The three workbooks in `artifacts/frozen_similarity/` contain the historical similarity outputs for the low-, medium-, and high-frequency target intervals. The `Similar_Nodes` worksheet contains:
-
-| Variable | Definition |
-|---|---|
-| `TimePoint` | Zero-based index of the current observation |
-| `Sim_1_UB`, `Sim_1_LB` | Upper and lower bounds of the most similar historical interval |
-| `Index_1`, `Similarity_1` | Historical index and similarity score of the first node |
-| `Sim_2_UB`, `Sim_2_LB` | Upper and lower bounds of the second-most-similar historical interval |
-| `Index_2`, `Similarity_2` | Historical index and similarity score of the second node |
-
-The `Similarity_Matrix` worksheet stores the full time-ordered interval similarity matrix used to select these nodes.
