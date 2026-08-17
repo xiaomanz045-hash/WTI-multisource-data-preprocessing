@@ -23,13 +23,17 @@ The matrix contains 1,469 observations from 2020-01-02 to 2025-09-15 and has no 
 |---|---|---:|---|
 | `wti_raw.xlsx` | Daily WTI futures prices and trading information | 1,500 | 2020-01-01 to 2025-09-16 |
 | `baidu_index_raw_data.xlsx` | Daily search indices for 37 candidate keywords | 2,085 | 2020-01-01 to 2025-09-15 |
-| `news_text_with_sentiment_scores.xlsx` | Cleaned news text and article-level BERT sentiment scores | 10,216 | 2020-01-02 to 2025-09-11 |
+| `news_text_with_sentiment_scores.xlsx` | Cleaned news text and article-level BERT sentiment scores (`Negative=-1`, `Neutral=0`, `Positive=1`) | 10,216 | 2020-01-02 to 2025-09-11 |
 | `geopolitical_risk_index.xlsx` | Geopolitical-risk series used in structured features | 1,499 | 2020-01-01 to 2025-09-15 |
 | `natural_gas_futures.xlsx` | Daily natural-gas futures series | 1,501 | 2020-01-01 to 2025-09-16 |
 | `gold_futures.xlsx` | Daily gold futures series | 1,474 | 2020-01-02 to 2025-09-17 |
 | `us_dollar_index.xlsx` | Daily US Dollar Index series | 1,484 | 2020-01-01 to 2025-09-16 |
 
 The manuscript provides the original provider names, source websites, and collection procedures. Column names in the raw workbooks are retained to preserve provenance.
+
+## BERT sentiment model
+
+Article-level news sentiment was generated with [`hw2942/bert-base-chinese-finetuning-financial-news-sentiment`](https://huggingface.co/hw2942/bert-base-chinese-finetuning-financial-news-sentiment), pinned to revision `596188a9c884118e13984140a8b568a2252e01c2`. The model configuration defines class 0 as `Negative`, class 1 as `Neutral`, and class 2 as `Positive`; the manuscript pipeline maps these classes to -1, 0, and 1. Inputs are padded and truncated to a maximum length of 512 tokens. `preprocessing/bert_sentiment_analysis.py` performs inference, while `feature_preprocessing.py` averages article-level scores by day and forward-fills missing trading dates when constructing `NH`.
 
 ## Frozen intermediate feature data
 

@@ -1,0 +1,17 @@
+{
+  "model_id": "hw2942/bert-base-chinese-finetuning-financial-news-sentiment",
+  "source_url": "https://huggingface.co/hw2942/bert-base-chinese-finetuning-financial-news-sentiment",
+  "revision": "596188a9c884118e13984140a8b568a2252e01c2",
+  "library": "transformers",
+  "task": "text-classification",
+  "language": "zh",
+  "class_mapping": {
+    "0": {"label": "Negative", "score": -1},
+    "1": {"label": "Neutral", "score": 0},
+    "2": {"label": "Positive", "score": 1}
+  },
+  "maximum_sequence_length": 512,
+  "weights_included_in_repository": false,
+  "weights_note": "The third-party model weights are retrieved from the cited Hugging Face repository or supplied through --model-path."
+}
+

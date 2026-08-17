@@ -4,5 +4,9 @@ __pycache__/
 preprocessing_outputs/
 validation_outputs/
 feature_outputs/
+sentiment_outputs/
+models/
+*.bin
+*.safetensors
 data/processed/*_preview.png
 data/processed/*.inspect.ndjson

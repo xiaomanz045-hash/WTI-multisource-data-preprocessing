@@ -10,7 +10,7 @@
 2. Spearman相关性筛选；
 3. 百度指数变量的PCA降维；
 4. 结构化变量的PLS降维；
-5. BERT新闻情感得分的日度聚合；
+5. 使用指定中文财经BERT模型计算新闻情感得分并进行日度聚合；
 6. 对全部特征值和目标值进行CEEMDAN分解；
 7. 计算样本熵并重构低频、中频和高频序列；
 8. 使用2V-GCN计算每个时点最相似的前2个历史区间节点。
@@ -25,6 +25,8 @@ data/processed/                        时间对齐后的八变量特征矩阵
 artifacts/frozen_ceemdan.xlsx          原实验CEEMDAN冻结结果
 artifacts/frozen_similarity/           原实验三频相似节点冻结结果
 notebooks/feature_preprocessing.ipynb  数据预处理Notebook
+notebooks/bert_sentiment_analysis.ipynb
+preprocessing/bert_sentiment_analysis.py
 preprocessing/feature_preprocessing.py
 preprocessing/ceemdan_reconstruction.py
 preprocessing/two_view_gcn_similarity.py
@@ -33,6 +35,8 @@ data_dictionary.md
 MANIFEST.sha256
 requirements.txt
 ```
+
+仓库不重新发布BERT模型权重。代码固定调用官方模型[`hw2942/bert-base-chinese-finetuning-financial-news-sentiment`](https://huggingface.co/hw2942/bert-base-chinese-finetuning-financial-news-sentiment)及版本提交`596188a9c884118e13984140a8b568a2252e01c2`，也支持传入本地模型目录。模型来源和标签映射记录在`model_metadata.json`中。
 
 ## 运行方法
 
@@ -43,6 +47,14 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
+
+根据清洗后的新闻文本重新计算文章层面的BERT情感得分：
+
+```powershell
+python preprocessing\bert_sentiment_analysis.py
+```
+
+模型输出`Negative、Neutral、Positive`三类，分别映射为`-1、0、1`，最大文本长度为512。若使用本地模型，可增加`--model-path <本地模型目录>`。结果保存在`sentiment_outputs/news_text_scored_by_bert.xlsx`。
 
 从原始数据重新生成多源特征矩阵：
 
@@ -82,7 +94,6 @@ python preprocessing\run_feature_pipeline.py --mode recompute --feature-matrix p
 
 ## 数据来源与使用
 
-原始数据提供方、来源网站、获取期间和收集方法见论文正文。`news_text_with_sentiment_scores.xlsx`包含清洗后的新闻文本和文章层面的BERT情感得分；本仓库只进行情感得分的日度聚合，不重新训练BERT。
+原始数据提供方、来源网站、获取期间和收集方法见论文正文。`news_text_with_sentiment_scores.xlsx`包含清洗后的新闻文本和文章层面的BERT情感得分。本仓库提供重新生成这些得分的推理代码，但不对第三方BERT模型进行微调或重新训练。
 
 本仓库不对第三方来源数据另行主张再分发许可，数据再利用应遵守原始提供方的使用条款。
-

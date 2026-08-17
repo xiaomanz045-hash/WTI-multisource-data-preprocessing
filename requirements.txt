@@ -8,3 +8,4 @@ EMD-signal==1.6.4
 torch==2.0.0
 torch-geometric==2.5.3
 tqdm==4.64.1
+transformers==4.30.2

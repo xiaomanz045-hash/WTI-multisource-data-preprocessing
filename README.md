@@ -10,7 +10,7 @@ The repository supports reproduction of:
 2. Spearman correlation screening;
 3. PCA of the selected Baidu Index variables;
 4. PLS-based reduction of the structured variables;
-5. daily aggregation of BERT-derived news sentiment scores;
+5. article-level financial-news sentiment classification with the cited Chinese BERT model and daily score aggregation;
 6. CEEMDAN decomposition of all seven input/target variables;
 7. sample-entropy calculation and low/medium/high-frequency reconstruction; and
 8. time-ordered top-2 interval-node construction using the two-view GCN procedure.
@@ -25,6 +25,8 @@ data/processed/                        aligned eight-column feature matrix
 artifacts/frozen_ceemdan.xlsx          historical CEEMDAN output
 artifacts/frozen_similarity/           historical 2V-GCN node outputs
 notebooks/feature_preprocessing.ipynb  data preprocessing notebook
+notebooks/bert_sentiment_analysis.ipynb
+preprocessing/bert_sentiment_analysis.py
 preprocessing/feature_preprocessing.py
 preprocessing/ceemdan_reconstruction.py
 preprocessing/two_view_gcn_similarity.py
@@ -33,6 +35,8 @@ data_dictionary.md
 MANIFEST.sha256
 requirements.txt
 ```
+
+The BERT model weights are not redistributed in this repository. The code loads the official model [`hw2942/bert-base-chinese-finetuning-financial-news-sentiment`](https://huggingface.co/hw2942/bert-base-chinese-finetuning-financial-news-sentiment) at pinned revision `596188a9c884118e13984140a8b568a2252e01c2`, or accepts a user-supplied local model directory. Model provenance and the class-to-score mapping are recorded in `model_metadata.json`.
 
 ## Processed matrix
 
@@ -51,6 +55,14 @@ python -m pip install -r requirements.txt
 On macOS or Linux, use `source .venv/bin/activate`.
 
 ## Run the feature pipeline
+
+To reproduce article-level sentiment scores from cleaned news text, run:
+
+```powershell
+python preprocessing\bert_sentiment_analysis.py
+```
+
+The model outputs `Negative`, `Neutral`, and `Positive`, which are mapped to `-1`, `0`, and `1`, respectively. Text is truncated to 512 tokens. Use `--model-path <local-model-directory>` to run from a local copy instead of downloading the pinned Hugging Face revision. The output is written to `sentiment_outputs/news_text_scored_by_bert.xlsx`.
 
 To rebuild the multi-source feature matrix from the raw files:
 
@@ -92,7 +104,6 @@ The source-data preprocessing workflow was run successfully. It selected the sam
 
 ## Data provenance and reuse
 
-Original providers, source websites, retrieval periods, and collection procedures are reported in the manuscript. `news_text_with_sentiment_scores.xlsx` contains cleaned news text and the article-level BERT-derived sentiment scores used for daily aggregation; this repository does not retrain BERT.
+Original providers, source websites, retrieval periods, and collection procedures are reported in the manuscript. `news_text_with_sentiment_scores.xlsx` contains cleaned news text and the article-level BERT-derived sentiment scores used for daily aggregation. The repository provides inference code for regenerating these scores but does not fine-tune or retrain the third-party BERT model.
 
 No separate redistribution licence for third-party source data is asserted by this repository. Users should consult the original providers' terms before reuse.
-
