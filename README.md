@@ -14,7 +14,7 @@ The repository supports reproduction of:
 6. daily sentiment aggregation, missing-value treatment, and feature integration; and
 7. construction of the final model-ready feature matrix.
 
-The repository covers only the multi-source data-preparation stages listed above. Subsequent feature-extraction and forecasting stages are outside its scope.
+
 
 ## Repository structure
 
