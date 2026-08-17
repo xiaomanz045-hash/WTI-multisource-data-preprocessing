@@ -1,25 +1,34 @@
-# Multi-source data and feature preprocessing for WTI interval forecasting
+# Multi-source feature construction for WTI interval forecasting
 
-This repository contains the data and preprocessing materials used to construct the multi-source feature matrix in the associated manuscript.
+This repository contains the data and preprocessing materials used to construct the complete feature inputs for the associated manuscript.
 
 ## Public scope
 
-The repository supports reproduction of the **data-construction and feature-preprocessing stage**. It contains:
+The repository supports reproduction of:
 
-- source data files used in the study;
-- a processed, time-aligned feature matrix;
-- a Python script and Jupyter notebook for temporal alignment, Spearman screening, PCA, PLS, and daily aggregation of BERT-derived sentiment scores; and
-- variable definitions, provenance notes, and file checksums.
+1. temporal alignment of the source data;
+2. Spearman correlation screening;
+3. PCA of the selected Baidu Index variables;
+4. PLS-based reduction of the structured variables;
+5. daily aggregation of BERT-derived news sentiment scores;
+6. CEEMDAN decomposition of all seven input/target variables;
+7. sample-entropy calculation and low/medium/high-frequency reconstruction; and
+8. time-ordered top-2 interval-node construction using the two-view GCN procedure.
 
-The repository does **not** contain the forecasting-model implementation, CEEMDAN decomposition, graph-node construction, ELM/GRU/KAN-LSTM training, combination forecasting, or forecasting-result files. The forecasting design, data split, hyperparameters, repeated-run settings, and evaluation measures are described in the manuscript.
+The repository does **not** contain the ELM, GRU, KAN-LSTM, or combination-forecasting implementations, trained forecasting models, prediction files, or forecasting evaluation results.
 
 ## Repository structure
 
 ```text
-data/raw/                         source data used by preprocessing
-data/processed/                   final eight-column model-input matrix
-notebooks/feature_preprocessing.ipynb
+data/raw/                              source data
+data/processed/                        aligned eight-column feature matrix
+artifacts/frozen_ceemdan.xlsx          historical CEEMDAN output
+artifacts/frozen_similarity/           historical 2V-GCN node outputs
+notebooks/feature_preprocessing.ipynb  data preprocessing notebook
 preprocessing/feature_preprocessing.py
+preprocessing/ceemdan_reconstruction.py
+preprocessing/two_view_gcn_similarity.py
+preprocessing/run_feature_pipeline.py
 data_dictionary.md
 MANIFEST.sha256
 requirements.txt
@@ -27,44 +36,63 @@ requirements.txt
 
 ## Processed matrix
 
-`data/processed/WTI_interval_feature_matrix.xlsx` contains 1,469 daily observations from 2 January 2020 to 15 September 2025 and the following columns:
+`data/processed/WTI_interval_feature_matrix.xlsx` contains 1,469 daily observations from 2 January 2020 to 15 September 2025. Its columns are `Date`, `UB`, `LB`, `BI1`, `BI2`, `NH`, `SD1`, and `SD2`.
 
-`Date`, `UB`, `LB`, `BI1`, `BI2`, `NH`, `SD1`, and `SD2`.
+## Installation
 
-It contains no similar-node variables, decomposed components, model predictions, or evaluation results.
-
-## Reproduce the preprocessing stage
-
-Python 3.10 is recommended. From the repository root, run:
+Python 3.10 is recommended. From the repository root:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+```
+
+On macOS or Linux, use `source .venv/bin/activate`.
+
+## Run the feature pipeline
+
+To rebuild the multi-source feature matrix from the raw files:
+
+```powershell
 python preprocessing\feature_preprocessing.py
 ```
 
-On macOS or Linux, replace the activation command with:
+The final output of this stage is `preprocessing_outputs/09_final_multisource_feature_matrix.xlsx`.
 
-```bash
-source .venv/bin/activate
+To reproduce the exact historical decomposition, reconstructed frequency inputs, and top-2 similarity-node inputs using the frozen stochastic outputs:
+
+```powershell
+python preprocessing\run_feature_pipeline.py --mode frozen
 ```
 
-The generated files are written to `preprocessing_outputs/`. The key output is `09_final_multisource_feature_matrix.xlsx`.
+To rerun CEEMDAN and 2V-GCN from the processed feature matrix:
 
-Alternatively, open `notebooks/feature_preprocessing.ipynb` from the repository root and run all cells in order.
+```powershell
+python preprocessing\run_feature_pipeline.py --mode recompute
+```
 
-## Reproducibility check
+To connect a newly generated preprocessing matrix directly to the recomputation stage:
 
-The public preprocessing workflow was tested against the deposited feature matrix. It selected the same 11 Baidu Index variables and produced a matrix of 1,469 rows and 8 columns. The reproduced values are identical for `UB`, `LB`, `NH`, `SD1`, and `SD2`; the maximum absolute numerical differences for `BI1` and `BI2` are below `3.1e-11`, reflecting floating-point precision only.
+```powershell
+python preprocessing\run_feature_pipeline.py --mode recompute --feature-matrix preprocessing_outputs\09_final_multisource_feature_matrix.xlsx
+```
+
+All generated frequency and similar-node inputs are written to `feature_outputs/`. The pipeline stops before forecasting-model training.
+
+## Stochastic-stage clarification
+
+The original CEEMDAN and 2V-GCN executions did not save random seeds. Therefore, `--mode frozen` is the route for reproducing the exact historical feature inputs used in the manuscript. `--mode recompute` preserves the original algorithms and hyperparameters but may produce numerically different stochastic realizations. An optional `--seed` argument is provided for new deterministic runs; it was not imposed on the historical experiment.
+
+The retained settings include CEEMDAN `Nstd=0.2`, `NR=100`, and `MaxIter=10`; sample entropy with `m=2` and `r=0.2×SD`; two historical interval nodes; a visibility threshold of `0.5`; and the original three-layer GCN training settings.
+
+## Reproducibility checks
+
+The source-data preprocessing workflow was run successfully. It selected the same 11 Baidu Index variables and produced a 1,469-row, 8-column matrix. `UB`, `LB`, `NH`, `SD1`, and `SD2` matched exactly; the maximum absolute differences for `BI1` and `BI2` were below `3.1e-11`, reflecting floating-point precision only. The frozen feature pipeline was also executed to verify the three reconstructed frequency files and the attached top-2 historical interval-node variables.
 
 ## Data provenance and reuse
 
-The original providers, source websites, retrieval periods, and collection procedures are reported in the manuscript. The files in `data/raw/` retain the observations used in the study. `news_text_with_sentiment_scores.xlsx` contains cleaned news text and the BERT-derived sentiment score used in the aggregation step; the repository does not retrain BERT.
+Original providers, source websites, retrieval periods, and collection procedures are reported in the manuscript. `news_text_with_sentiment_scores.xlsx` contains cleaned news text and the article-level BERT-derived sentiment scores used for daily aggregation; this repository does not retrain BERT.
 
-No separate redistribution licence for third-party source data is asserted by this repository. Users should consult the original data providers' terms before reuse.
-
-## Data and code availability wording
-
-The source-data files, preprocessing code, and processed time-aligned feature matrix used in this study are available in this repository. The materials document temporal alignment, Spearman correlation analysis, feature screening, PCA, PLS-based dimension reduction, and daily aggregation of BERT-derived sentiment scores.
+No separate redistribution licence for third-party source data is asserted by this repository. Users should consult the original providers' terms before reuse.
 

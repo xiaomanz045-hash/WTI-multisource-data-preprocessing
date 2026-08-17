@@ -31,3 +31,34 @@ The matrix contains 1,469 observations from 2020-01-02 to 2025-09-15 and has no 
 
 The manuscript provides the original provider names, source websites, and collection procedures. Column names in the raw workbooks are retained to preserve provenance.
 
+## Frozen intermediate feature data
+
+### CEEMDAN decomposition
+
+`artifacts/frozen_ceemdan.xlsx` stores the historical decomposition actually used in the manuscript. Its worksheets map to variables as follows:
+
+| Worksheet | Variable |
+|---|---|
+| `Upper bound` | `UB` |
+| `Lower bound` | `LB` |
+| `BIPC1` | `BI1` |
+| `BIPC2` | `BI2` |
+| `Sentiment Score` | `NH` |
+| `SDPLS1` | `SD1` |
+| `SDPLS2` | `SD2` |
+
+Each sheet contains the original signal, its IMF components, and the associated sample-entropy information. The exact IMF allocation used for low-, medium-, and high-frequency reconstruction is declared in `preprocessing/ceemdan_reconstruction.py`.
+
+### Time-ordered 2V-GCN nodes
+
+The three workbooks in `artifacts/frozen_similarity/` contain the historical similarity outputs for the low-, medium-, and high-frequency target intervals. The `Similar_Nodes` worksheet contains:
+
+| Variable | Definition |
+|---|---|
+| `TimePoint` | Zero-based index of the current observation |
+| `Sim_1_UB`, `Sim_1_LB` | Upper and lower bounds of the most similar historical interval |
+| `Index_1`, `Similarity_1` | Historical index and similarity score of the first node |
+| `Sim_2_UB`, `Sim_2_LB` | Upper and lower bounds of the second-most-similar historical interval |
+| `Index_2`, `Similarity_2` | Historical index and similarity score of the second node |
+
+The `Similarity_Matrix` worksheet stores the full time-ordered interval similarity matrix used to select these nodes.

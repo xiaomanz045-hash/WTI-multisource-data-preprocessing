@@ -1,58 +1,88 @@
-# WTI区间预测的多源数据与特征预处理
+# WTI区间预测的多源特征构建
 
-本仓库用于公开论文中多源输入数据及最终特征矩阵的构建材料。
+本仓库公开论文中完整的特征数据构建材料。
 
 ## 公开范围
 
-仓库仅支持复现**数据构建与特征预处理阶段**，包括：
+仓库支持复现以下步骤：
 
-- 研究使用的原始数据文件；
-- 经过时间对齐的最终特征矩阵；
-- 用于时间对齐、Spearman相关性筛选、PCA、PLS以及BERT情感得分日度聚合的Python代码和Jupyter Notebook；
-- 变量说明、数据来源说明和文件校验值。
+1. 原始数据的时间对齐；
+2. Spearman相关性筛选；
+3. 百度指数变量的PCA降维；
+4. 结构化变量的PLS降维；
+5. BERT新闻情感得分的日度聚合；
+6. 对全部特征值和目标值进行CEEMDAN分解；
+7. 计算样本熵并重构低频、中频和高频序列；
+8. 使用2V-GCN计算每个时点最相似的前2个历史区间节点。
 
-仓库不包含预测模型实现、CEEMDAN分解、图相似节点构建、ELM/GRU/KAN-LSTM训练、组合预测和预测结果文件。模型结构、样本划分、超参数、重复实验设置及评价指标已在论文中说明。
+仓库不公开ELM、GRU、KAN-LSTM和组合预测实现，也不包含训练后的预测模型、预测结果或预测评价结果。
 
 ## 目录结构
 
 ```text
-data/raw/                         预处理使用的原始数据
-data/processed/                   最终八变量模型输入矩阵
-notebooks/feature_preprocessing.ipynb
+data/raw/                              原始数据
+data/processed/                        时间对齐后的八变量特征矩阵
+artifacts/frozen_ceemdan.xlsx          原实验CEEMDAN冻结结果
+artifacts/frozen_similarity/           原实验三频相似节点冻结结果
+notebooks/feature_preprocessing.ipynb  数据预处理Notebook
 preprocessing/feature_preprocessing.py
+preprocessing/ceemdan_reconstruction.py
+preprocessing/two_view_gcn_similarity.py
+preprocessing/run_feature_pipeline.py
 data_dictionary.md
 MANIFEST.sha256
 requirements.txt
 ```
 
-## 处理后矩阵
-
-`data/processed/WTI_interval_feature_matrix.xlsx`包含2020年1月2日至2025年9月15日的1,469个日度样本，变量为：
-
-`Date、UB、LB、BI1、BI2、NH、SD1、SD2`。
-
-该文件不包含相似节点、分解分量、模型预测值或评价结果。
-
 ## 运行方法
 
-建议使用Python 3.10。在仓库根目录运行：
+建议使用Python 3.10。在仓库根目录执行：
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+```
+
+从原始数据重新生成多源特征矩阵：
+
+```powershell
 python preprocessing\feature_preprocessing.py
 ```
 
-运行结果保存在`preprocessing_outputs/`，其中最终矩阵为`09_final_multisource_feature_matrix.xlsx`。也可以从仓库根目录打开`notebooks/feature_preprocessing.ipynb`并按顺序运行全部单元格。
+直接使用原实验冻结的CEEMDAN和相似节点结果，复现论文实际使用的三频特征输入：
 
-## 复现验证
+```powershell
+python preprocessing\run_feature_pipeline.py --mode frozen
+```
 
-本仓库的预处理流程已完成实际运行验证，可筛选出与原实验一致的11个百度指数变量，并生成1,469行、8列的最终矩阵。`UB、LB、NH、SD1、SD2`与公开矩阵完全一致，`BI1、BI2`的最大绝对差异低于`3.1e-11`，仅为浮点计算精度差异。
+重新运行CEEMDAN和2V-GCN：
+
+```powershell
+python preprocessing\run_feature_pipeline.py --mode recompute
+```
+
+也可以把刚生成的预处理矩阵直接传入后续流程：
+
+```powershell
+python preprocessing\run_feature_pipeline.py --mode recompute --feature-matrix preprocessing_outputs\09_final_multisource_feature_matrix.xlsx
+```
+
+生成的三频数据及相似节点输入保存在`feature_outputs/`。流程在预测模型训练之前结束。
+
+## 随机性说明
+
+原实验运行CEEMDAN和2V-GCN时没有保存随机种子。因此，`--mode frozen`用于精确复现论文实际采用的历史特征输入；`--mode recompute`保持原算法和超参数不变，但随机实现的具体数值可能与历史运行存在差异。代码提供可选的`--seed`参数，便于今后的确定性实验，但该参数没有追溯性地用于原实验。
+
+保留的主要设置包括：CEEMDAN的`Nstd=0.2`、`NR=100`和`MaxIter=10`；样本熵的`m=2`和`r=0.2×标准差`；最相似历史节点数为2；可视图阈值为`0.5`；以及原三层GCN训练设置。
+
+## 验证情况
+
+原始数据预处理流程已实际运行通过，筛选出与原实验一致的11个百度指数变量，并生成1,469行、8列的最终矩阵。`UB、LB、NH、SD1、SD2`完全一致，`BI1、BI2`的最大绝对差异低于`3.1e-11`。冻结特征流程也已用于验证三类频率重构数据和前2个历史相似区间节点的拼接过程。
 
 ## 数据来源与使用
 
-原始数据提供方、来源网站、获取期间及收集方法见论文正文。`news_text_with_sentiment_scores.xlsx`提供清洗后的新闻文本和预先计算的BERT情感得分；本仓库对该得分进行日度聚合，但不重新训练BERT模型。
+原始数据提供方、来源网站、获取期间和收集方法见论文正文。`news_text_with_sentiment_scores.xlsx`包含清洗后的新闻文本和文章层面的BERT情感得分；本仓库只进行情感得分的日度聚合，不重新训练BERT。
 
 本仓库不对第三方来源数据另行主张再分发许可，数据再利用应遵守原始提供方的使用条款。
 

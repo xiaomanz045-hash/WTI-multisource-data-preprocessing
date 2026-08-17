@@ -3,6 +3,6 @@ __pycache__/
 .ipynb_checkpoints/
 preprocessing_outputs/
 validation_outputs/
+feature_outputs/
 data/processed/*_preview.png
 data/processed/*.inspect.ndjson
-
