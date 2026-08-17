@@ -10,7 +10,7 @@ The repository supports reproduction of:
 2. Spearman correlation analysis and screening;
 3. unstandardized two-component PCA of the selected Baidu Index variables;
 4. two-component PLS reduction of the structured variables;
-5. article-level financial-news sentiment classification with the cited Chinese BERT model;
+5. financial-news sentiment classification with the cited Chinese BERT model;
 6. daily sentiment aggregation, missing-value treatment, and feature integration; and
 7. construction of the final model-ready feature matrix.
 
