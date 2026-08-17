@@ -40,7 +40,7 @@ The BERT model weights are not redistributed in this repository. The code loads 
 
 ## Processed matrix
 
-`data/processed/WTI_interval_feature_matrix.xlsx` contains 1,469 daily observations from 2 January 2020 to 15 September 2025. Its columns are `Date`, `UB`, `LB`, `BI1`, `BI2`, `NH`, `SD1`, and `SD2`.
+`data/processed/WTI_interval_feature_matrix.xlsx` contains 1,469 daily observations from 2 January 2020 to 15 September 2025. Its columns are `Date`, `UB`, `LB`, `BI1`, `BI2`, `NH`, `SD1`, and `SD2`.The data is chronologically divided into a training set, a validation set, and a testing set with a ratio of 7:1:2.
 
 ## Installation
 
